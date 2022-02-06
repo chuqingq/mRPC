@@ -1,12 +1,12 @@
 # mRPC
 mRPC = mDNS + RPC.
 
-## 特性
+## Features
 
 1. mDNS的特性，即局域网服务发现。
 2. Go的RPC，即无需像gRPC那样生成代码，可以直接使用。
 
-## 范例
+## Example
 
 RPC protocol and server implementation:
 
