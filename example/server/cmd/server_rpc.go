@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"mrpc"
-	"mrpc/example/server"
+	"github.com/chuqingq/mrpc"
+	"github.com/chuqingq/mrpc/example/server"
 )
 
 func main() {
