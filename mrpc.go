@@ -8,6 +8,7 @@ func NewRPC() *RPC {
 	}
 }
 
+// RPC RPC结构
 type RPC struct {
 	ServiceEventChan    chan *ServiceEvent    // 通知service上线或下线
 	AsyncCallResultChan chan *AsyncCallResult // 通知异步调用结果
