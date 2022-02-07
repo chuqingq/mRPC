@@ -67,4 +67,4 @@ log.Printf("Arith: %d*%d=%d", args.A, args.B, reply)
 
 ## Documentation
 
-[![GoDoc](https://pkg.go.dev/badge/github.com/chuqingq/mRPC)](https://pkg.go.dev/github.com/chuqingq/mRPC)
+[![GoDoc](https://pkg.go.dev/badge/github.com/chuqingq/mrpc)](https://pkg.go.dev/github.com/chuqingq/mrpc)
