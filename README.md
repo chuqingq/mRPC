@@ -65,6 +65,6 @@ if err != nil {
 log.Printf("Arith: %d*%d=%d", args.A, args.B, reply)
 ```
 
-## Document
+## Documentation
 
-TODO
+[![GoDoc](https://pkg.go.dev/badge/github.com/chuqingq/mRPC)](https://pkg.go.dev/github.com/chuqingq/mRPC)
