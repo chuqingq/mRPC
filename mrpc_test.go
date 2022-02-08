@@ -1,10 +1,8 @@
-package main
+package mrpc
 
 import (
 	"errors"
 	"testing"
-
-	"github.com/chuqingq/mrpc"
 )
 
 // rpc protocol
@@ -38,7 +36,7 @@ func (t *Arith) Divide(args *Args, quo *Quotient) error {
 func TestCall(t *testing.T) {
 	service := "_foobar._tcp"
 	// server
-	rpcs := mrpc.NewRPC()
+	rpcs := NewRPC()
 	defer rpcs.Close()
 	err := rpcs.RegisterService(service, new(Arith)) // &Arith{} 不行？
 	if err != nil {
@@ -46,7 +44,7 @@ func TestCall(t *testing.T) {
 	}
 	// client
 	{
-		rpc := mrpc.NewRPC()
+		rpc := NewRPC()
 		// Synchronous call
 		args := &Args{
 			A: 7,
@@ -64,7 +62,7 @@ func TestCall(t *testing.T) {
 	}
 	// client again
 	{
-		rpc := mrpc.NewRPC()
+		rpc := NewRPC()
 		// Synchronous call
 		args := &Args{
 			A: 6,
