@@ -7,6 +7,18 @@ import (
 	"github.com/chuqingq/mrpc"
 )
 
+// rpc protocol
+
+type Args struct {
+	A, B int
+}
+
+type Quotient struct {
+	Quo, Rem int
+}
+
+type Arith int
+
 // server implementation
 
 func (t *Arith) Multiply(args *Args, reply *int) error {
@@ -24,27 +36,48 @@ func (t *Arith) Divide(args *Args, quo *Quotient) error {
 }
 
 func TestCall(t *testing.T) {
+	service := "_foobar._tcp"
 	// server
 	rpcs := mrpc.NewRPC()
 	defer rpcs.Close()
-	err := rpcs.RegisterService("rpcserver-instance-1", new(Arith)) // &Arith{} 不行？
+	err := rpcs.RegisterService(service, new(Arith)) // &Arith{} 不行？
 	if err != nil {
 		t.Fatalf("rpc.RegisterService error: %v", err)
 	}
 	// client
-	rpc := mrpc.NewRPC()
-	defer rpc.Close()
-	// Synchronous call
-	args := &Args{
-		A: 7,
-		B: 8,
+	{
+		rpc := mrpc.NewRPC()
+		// Synchronous call
+		args := &Args{
+			A: 7,
+			B: 8,
+		}
+		var reply int
+		err = rpc.Call(service, "Arith.Multiply", args, &reply)
+		if err != nil {
+			t.Fatalf("rpc call Arith.Multiply error: %v", err)
+		}
+		if reply != 56 {
+			t.Fatalf("arith error: %d*%d!=%d", args.A, args.B, reply)
+		}
+		rpc.Close()
 	}
-	var reply int
-	err = rpc.Call("rpcserver-instance-1", "Arith.Multiply", args, &reply)
-	if err != nil {
-		t.Fatalf("rpc call Arith.Multiply error: %v", err)
-	}
-	if reply != 56 {
-		t.Fatalf("arith error: %d*%d!=%d", args.A, args.B, reply)
+	// client again
+	{
+		rpc := mrpc.NewRPC()
+		// Synchronous call
+		args := &Args{
+			A: 6,
+			B: 9,
+		}
+		var reply int
+		err = rpc.Call(service, "Arith.Multiply", args, &reply)
+		if err != nil {
+			t.Fatalf("rpc call Arith.Multiply error: %v", err)
+		}
+		if reply != 54 {
+			t.Fatalf("arith error: %d*%d!=%d", args.A, args.B, reply)
+		}
+		rpc.Close()
 	}
 }
