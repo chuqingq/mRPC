@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/rpc"
 	"os"
+	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/hashicorp/mdns"
@@ -15,11 +17,15 @@ import (
 
 // RPC RPC结构
 type RPC struct {
-	ServiceEventChan    chan *ServiceEvent    // 通知service上线或下线
-	AsyncCallResultChan chan *AsyncCallResult // 通知异步调用结果
-	// other unexported fields
-	clientsMap sync.Map // string -> serviceInfo
+	// server
+	listener   net.Listener
+	port       int
+	httpServer *http.Server
 	serversMap sync.Map // string -> server
+	// client
+	AsyncCallResultChan chan *AsyncCallResult // 通知异步调用结果
+	ServiceEventChan    chan *ServiceEvent    // 通知service上线或下线
+	clientsMap          sync.Map              // string -> serviceInfo
 }
 
 // NewRPC 创建RPC对象。服务端和客户端都使用这个对象做RPC。
@@ -30,25 +36,34 @@ func NewRPC() *RPC {
 	}
 }
 
+func getPortFromAddr(addr string) (int, error) {
+	strs := strings.Split(addr, ":")
+	i, err := strconv.Atoi(strs[len(strs)-1])
+	return i, err
+}
+
 // RegisterService 注册服务实例和receiver
 // 其中rcvr实现了handler;
 // 具体用什么ip、port，随机选取，对用户透明。需要rpc中维护连接池。
 func (r *RPC) RegisterService(serviceName string, rcvrs ...interface{}) error {
-	port := 8081 // TODO
 	// rpc
 	for _, rcvr := range rcvrs {
 		rpc.Register(rcvr)
 	}
 	rpc.HandleHTTP()
-	l, e := net.Listen("tcp", fmt.Sprintf(":%v", port))
+	// http
+	var e error
+	r.listener, e = net.Listen("tcp", "0.0.0.0:0")
 	if e != nil {
 		log.Fatalf("listen error: %v", e)
 	}
-	go http.Serve(l, nil) // TODO
-
+	r.port, _ = getPortFromAddr(r.listener.Addr().String())
+	r.httpServer = &http.Server{} // TODO 是否要同时支持多个？还是复用这一个？
+	go r.httpServer.Serve(r.listener)
+	// mdns
 	host, _ := os.Hostname()
 	info := []string{"My awesome service"}
-	service, err := mdns.NewMDNSService(host, serviceName, "", "", port, nil, info)
+	service, err := mdns.NewMDNSService(host, serviceName, "", "", r.port, nil, info)
 	if err != nil {
 		log.Printf("NewMDNSService error: %v", err)
 		return err
@@ -127,6 +142,9 @@ func (r *RPC) AsyncCall(instanceName string, serviceMethod string, args interfac
 
 // Close 关闭RPC。
 func (r *RPC) Close() error {
+	if r.httpServer != nil {
+		r.httpServer.Close()
+	}
 	close(r.ServiceEventChan)
 	close(r.AsyncCallResultChan)
 	return nil

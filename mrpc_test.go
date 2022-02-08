@@ -34,7 +34,7 @@ func (t *Arith) Divide(args *Args, quo *Quotient) error {
 }
 
 func TestCall(t *testing.T) {
-	service := "_foobar._tcp"
+	service := "server-instance-1"
 	// server
 	rpcs := NewRPC()
 	defer rpcs.Close()
