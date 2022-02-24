@@ -91,7 +91,7 @@ func (r *RPC) Call(service string, method string, args interface{}, reply interf
 	if err != nil {
 		return err
 	}
-	log.Printf("enter rpc.Call")
+	// log.Printf("enter rpc.Call")
 	return c.Call(method, args, reply)
 }
 
@@ -118,12 +118,12 @@ func (r *RPC) getClient(service string) (*rpc.Client, error) {
 		fmt.Printf("Got new entry: %v\n", entry)
 		// TODO 维护全局services
 		addr := fmt.Sprintf("%s:%v", entry.AddrV4, entry.Port)
-		log.Printf("addr: %v", addr)
+		// log.Printf("addr: %v", addr)
 		c, err := rpc.DialHTTP("tcp", addr)
 		if err != nil {
 			return nil, err
 		}
-		log.Printf("rpc.Dial success")
+		// log.Printf("rpc.Dial success")
 		r.clientsMap.Store(service, &clientInfo{
 			ip:   entry.AddrV4.String(),
 			port: entry.Port,
