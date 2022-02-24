@@ -2,6 +2,7 @@ package mrpc
 
 import (
 	"errors"
+	"log"
 	"testing"
 )
 
@@ -20,7 +21,9 @@ type Arith int
 // server implementation
 
 func (t *Arith) Multiply(args *Args, reply *int) error {
+	log.Printf("Multiply: %v", *t)
 	*reply = args.A * args.B
+	*t = Arith(*reply)
 	return nil
 }
 
@@ -38,7 +41,8 @@ func TestCall(t *testing.T) {
 	// server
 	rpcs := NewRPC()
 	defer rpcs.Close()
-	err := rpcs.RegisterService(service, new(Arith)) // &Arith{} 不行？
+	a := new(Arith)
+	err := rpcs.RegisterService(service, a) // &Arith{} 不行？
 	if err != nil {
 		t.Fatalf("rpc.RegisterService error: %v", err)
 	}
@@ -57,6 +61,9 @@ func TestCall(t *testing.T) {
 		}
 		if reply != 56 {
 			t.Fatalf("arith error: %d*%d!=%d", args.A, args.B, reply)
+		}
+		if int(*a) != reply {
+			t.Fatalf("arith error2: %d*%d!=%d", args.A, args.B, reply)
 		}
 		rpc.Close()
 	}
